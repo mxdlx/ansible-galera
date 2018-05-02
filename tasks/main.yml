@@ -1,0 +1,61 @@
+---
+- include_tasks: security.yml
+  when: enable_firewalld
+
+- include_tasks: RedHat.yml
+  when: ansible_os_family == 'RedHat'
+
+- name: Agregar configuracion de Galera
+  template:
+    src: server.cnf.j2
+    dest: /etc/my.cnf.d/server.cnf
+    owner: root
+    group: root
+    mode: 0644
+  become: true
+
+- name: Obtener primer host para establecer un pseudo master
+  set_fact:
+    pseudo_master: "{{ groups['galera'][0] }}"
+  run_once: true
+
+- name: Iniciar el pseudomaster
+  shell: galera_new_cluster
+  become: true
+  delegate_to: "{{ pseudo_master }}"
+  run_once: true
+
+- name: Verificar si ya esta establecido el password del root
+  shell: >
+    mysqladmin -u root status
+  changed_when: false
+  failed_when: false
+  register: root_pwd_check
+
+- name: Configurar usuario root por unica vez en el pseudomaster
+  mysql_user:
+    login_user: root
+    name: root
+    password: "{{ mariadb_root_password }}"
+    host_all: true
+    state: present
+  delegate_to: "{{ pseudo_master }}"
+  run_once: true
+  when: root_pwd_check.rc == 0
+
+- name: Configurar usuario SST por unica vez en el pseudomaster
+  mysql_user:
+    login_user: root
+    login_password: "{{ mariadb_root_password }}"
+    name: "{{ galera_sst_user }}"
+    password: "{{ galera_sst_pass }}"
+    priv: "*.*:ALL"
+    state: present
+  delegate_to: "{{ pseudo_master }}"
+  run_once: true
+
+- name: Iniciar el resto de los hosts
+  service:
+    name: mariadb
+    state: started
+  when: ansible_hostname != pseudo_master

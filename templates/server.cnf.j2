@@ -1,0 +1,23 @@
+[mysqld]
+log_bin
+binlog_format=ROW
+server-id={{ galera_server_id }}
+bind-address=0.0.0.0
+datadir=/var/lib/mysql
+default_storage_engine=InnoDB
+enforce_storage_engine=InnoDB
+innodb_autoinc_lock_mode=2
+innodb_buffer_pool_size=100M
+innodb_log_file_size=20M
+innodb_file_per_table=1
+innodb_flush_log_at_trx_commit=2
+wsrep_cluster_address="gcomm://{{ groups['galera'] | map('extract', hostvars, ['ansible_host']) | join(',') }}"
+wsrep_provider=/usr/lib64/galera/libgalera_smm.so
+wsrep_cluster_name={{ galera_wsrep_cluster_name }}
+wsrep_node_name={{ ansible_hostname }}
+wsrep_node_address={{ ansible_default_ipv4.address }}
+wsrep_sst_method=mariabackup
+wsrep_sst_receive_address={{ ansible_default_ipv4.address }}
+wsrep_sst_auth="{{ galera_sst_user }}:{{ galera_sst_pass }}"
+wsrep_on=ON
+wsrep_slave_threads=1

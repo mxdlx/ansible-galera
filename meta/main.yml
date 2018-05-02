@@ -1,0 +1,7 @@
+galaxy_info:
+  author: alvaroaraujo@cnea.gov.ar
+  company: CNEA
+  license: license (GPLv2, CC-BY, etc)
+  min_ansible_version: 2.0
+
+dependencies: []

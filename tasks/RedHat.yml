@@ -1,0 +1,34 @@
+---
+- name: Agregar repo de MariaDB
+  template:
+    src: mariadb.repo.j2
+    dest: /etc/yum.repos.d/mariadb.repo
+    owner: root
+    group: root
+    mode: 0644
+  become: true
+
+- name: Instalar paquetes
+  yum:
+    name: "{{ item }}"
+    state: present
+  with_items:
+    - MariaDB-client
+    - MariaDB-server
+    - galera
+  become: true
+
+- name: Instalar MariaDB Backup
+  yum:
+    name: "{{ item }}"
+    state: present
+  with_items:
+    - MariaDB-backup
+    - socat
+  become: true
+
+- name: Instalar MySQL-python
+  yum:
+    name: MySQL-python
+    state: present
+  become: true

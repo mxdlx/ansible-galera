@@ -1,0 +1,13 @@
+---
+# Firewalld
+enable_firewalld: False
+
+# Version de MariaDB
+mariadb_release: 10.1.26
+
+# Configuracion
+galera_server_id: 1337
+galera_wsrep_cluster_name: galera_cluster
+galera_sst_user: galera
+galera_sst_hosts_allowed:
+  - localhost
